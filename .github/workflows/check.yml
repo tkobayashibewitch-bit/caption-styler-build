@@ -1,7 +1,0 @@
-name: Check runner
-on: workflow_dispatch
-jobs:
-  linux:
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo ok
