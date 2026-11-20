@@ -1,0 +1,33 @@
+name: Build Caption Styler (Mac)
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        run: bash ./build_mac.sh "$PWD/sdk"
+      - name: Package
+        run: |
+          cd build_mac
+          ditto -c -k --sequesterRsrc --keepParent CaptionStyler.plugin CaptionStyler_mac.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: CaptionStyler-mac
+          path: build_mac/CaptionStyler_mac.zip
+      - name: Save result to build-output branch
+        run: |
+          cp build_mac/CaptionStyler_mac.zip /tmp/
+          git config user.name "build-bot"; git config user.email "build-bot@users.noreply.github.com"
+          git checkout --orphan build-output
+          git rm -rf --cached . >/dev/null
+          git clean -fdxq
+          cp /tmp/CaptionStyler_mac.zip .
+          git add CaptionStyler_mac.zip
+          git commit -m "Mac build ${GITHUB_SHA}"
+          git push -f origin build-output
